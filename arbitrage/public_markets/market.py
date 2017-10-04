@@ -44,7 +44,7 @@ class Market(object):
             logging.error("HTTPError, can't update market: %s" % self.name)
             log_exception(logging.DEBUG)
         except Exception as e:
-            logging.error("Can't update market: %s - %s" % (self.name, str(e)))
+            logging.error("Can't update market: %s - %s" % (self.name, str(e.msg)))
             log_exception(logging.DEBUG)
 
     def get_ticker(self):
