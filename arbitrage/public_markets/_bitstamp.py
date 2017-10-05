@@ -18,13 +18,6 @@ class Bitstamp(Market):
         self.base = base
 
     def update_depth(self):
-#         url = 'https://api.exchange.coinbase.com/products/%s/book?level=2' % self.code
-#         req = urllib.request.Request(url, headers={
-#             "Content-Type": "application/x-www-form-urlencoded",
-#             "Accept": "*/*",
-#             "User-Agent": "curl/7.24.0 (x86_64-apple-darwin12.0)"})
-#         res = urllib.request.urlopen(req)
-#         depth = json.loads(res.read().decode('utf8'))     
         depth = self.client.order_book(True, self.base, self.quote)
         self.depth = self.format_depth(depth)
 
