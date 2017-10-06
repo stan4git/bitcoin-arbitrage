@@ -1,46 +1,14 @@
-# Copyright (C) 2013, Maxime Biais <maxime@biais.org>
+'''
+Created on Oct 5, 2017
 
-import public_markets
-import observers
-import config
-import time
-import logging
-import json
-from concurrent.futures import ThreadPoolExecutor, wait
-from replay.orderbooklogger import OrderBookLogger
+@author: stan4
+'''
 
-class Arbitrer(object):
-    def __init__(self):
-        self.markets = []
-        self.observers = []
-        self.depths = {}
-        self.init_markets(config.markets)
-        self.init_observers(config.observers)
-        self.threadpool = ThreadPoolExecutor(max_workers=10)
-        self.order_book_logger = OrderBookLogger()
-
-    def init_markets(self, markets):
-        self.market_names = markets
-        for market_name in markets:
-            try:
-                exec('import public_markets.' + market_name.lower())
-                market = eval('public_markets.' + market_name.lower() + '.' +
-                              market_name + '()')
-                self.markets.append(market)
-            except (ImportError, AttributeError) as e:
-                print("%s market name is invalid: Ignored (you should check your config file)" % (market_name))
-
-    def init_observers(self, _observers):
-        self.observer_names = _observers
-        for observer_name in _observers:
-            try:
-                exec('import observers.' + observer_name.lower())
-                observer = eval('observers.' + observer_name.lower() + '.' +
-                                observer_name + '()')
-                self.observers.append(observer)
-            except (ImportError, AttributeError) as e:
-                print("%s observer name is invalid: Ignored (you should check your config file)" % (observer_name))
-
+class ClearingHouse(object):
+    def __init__(self, depths):
+        self.depths = depths
+        
+        
     def get_profit_for(self, mi, mj, kask, kbid):
         if self.depths[kask]["asks"][mi]["price"] \
            >= self.depths[kbid]["bids"][mj]["price"]:
@@ -138,40 +106,8 @@ class Arbitrer(object):
             observer.opportunity(
                 profit, volume, buyprice, kask, sellprice, kbid,
                 perc2, weighted_buyprice, weighted_sellprice)
-
-    def __get_market_depth(self, market, depths):
-        depths[market.name] = market.get_depth()
-
-    def update_depths(self):
-        depths = {}
-        futures = []
-        for market in self.markets:
-            futures.append(self.threadpool.submit(self.__get_market_depth,
-                                                  market, depths))
-        wait(futures, timeout=20)
-        if (config.track_order_book):
-            self.order_book_logger.log(json.dumps(depths, separators=(',', ': ')))
-        return depths
-
-    def tickers(self):
-        for market in self.markets:
-            logging.verbose("ticker: " + market.name + " - " + str(
-                market.get_ticker()))
-
-    def replay_history(self, directory):
-        import os
-        import json
-        import pprint
-        files = os.listdir(directory)
-        files.sort()
-        for f in files:
-            depths = json.load(open(directory + '/' + f, 'r'))
-            self.depths = {}
-            for market in self.market_names:
-                if market in depths:
-                    self.depths[market] = depths[market]
-            self.tick()
-
+            
+            
     def tick(self):
         for observer in self.observers:
             observer.begin_opportunity_finder(self.depths)
@@ -191,10 +127,3 @@ class Arbitrer(object):
 
         for observer in self.observers:
             observer.end_opportunity_finder()
-
-    def loop(self):
-        while True:
-            self.depths = self.update_depths()
-            self.tickers()
-            self.tick()
-            time.sleep(config.refresh_rate)

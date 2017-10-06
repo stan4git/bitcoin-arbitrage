@@ -5,7 +5,7 @@ import urllib.parse
 import config
 import logging
 import sys
-from fiatconverter import FiatConverter
+# from fiatconverter import FiatConverter
 from utils import log_exception
 
 class Market(object):
@@ -14,8 +14,8 @@ class Market(object):
         self.currency = currency
         self.depth_updated = 0
         self.update_rate = 60
-        self.fc = FiatConverter()
-        self.fc.update()
+#         self.fc = FiatConverter()
+#         self.fc.update()
 
     def get_depth(self):
         timediff = time.time() - self.depth_updated
@@ -44,7 +44,7 @@ class Market(object):
             logging.error("HTTPError, can't update market: %s" % self.name)
             log_exception(logging.DEBUG)
         except Exception as e:
-            logging.error("Can't update market: %s - %s" % (self.name, str(e)))
+            logging.error("Can't update market: %s - %s" % (self.name, str(e.msg)))
             log_exception(logging.DEBUG)
 
     def get_ticker(self):

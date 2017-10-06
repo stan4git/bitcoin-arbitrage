@@ -3,7 +3,7 @@ import config
 import time
 from .observer import Observer
 from .emailer import send_email
-from fiatconverter import FiatConverter
+# from fiatconverter import FiatConverter
 
 
 class TraderBot(Observer):
@@ -12,7 +12,7 @@ class TraderBot(Observer):
             # TODO: move that to the config file
             # "BitstampUSD": bitstampusd.PrivateBitstampUSD(),
         }
-        self.fc = FiatConverter()
+#         self.fc = FiatConverter()
         self.trade_wait = 120  # in seconds
         self.last_trade = 0
         self.potential_trades = []

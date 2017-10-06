@@ -1,23 +1,32 @@
+'''
+Created on Oct 4, 2017
+
+@author: stan4
+'''
+import json
 import urllib.request
 import urllib.error
 import urllib.parse
-import json
+import logging
 from .market import Market
 
-
-class BtceUSD(Market):
-    def __init__(self):
-        super(BtceUSD, self).__init__("USD")
-        self.update_rate = 60
+class Poloniex(Market):
+    api_url = 'https://poloniex.com/public'
+    
+    def __init__(self, currency, currency_pair):
+        super().__init__(currency)
+        self.currency_pair = currency_pair
+        self.update_rate = 30
 
     def update_depth(self):
-        url = 'https://btc-e.com/api/2/btc_usd/depth'
-        req = urllib.request.Request(url, None, headers={
+        url = self.api_url + '?command=returnOrderBook&currencyPair={}'.format(self.currency_pair)
+        req = urllib.request.Request(url, headers={
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "*/*",
             "User-Agent": "curl/7.24.0 (x86_64-apple-darwin12.0)"})
         res = urllib.request.urlopen(req)
         depth = json.loads(res.read().decode('utf8'))
+#         logging.warning(json.dumps(depth))
         self.depth = self.format_depth(depth)
 
     def sort_and_format(self, l, reverse=False):
@@ -32,6 +41,5 @@ class BtceUSD(Market):
         asks = self.sort_and_format(depth['asks'], False)
         return {'asks': asks, 'bids': bids}
 
-if __name__ == "__main__":
-    market = BtceUSD()
-    print(market.get_ticker())
+
+

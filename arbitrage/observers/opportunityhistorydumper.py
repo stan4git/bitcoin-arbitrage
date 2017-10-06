@@ -2,7 +2,7 @@ from .observer import Observer
 import json
 import time
 import os
-
+from _datetime import datetime
 
 class HistoryDumper(Observer):
     out_dir = 'history/'
@@ -13,10 +13,13 @@ class HistoryDumper(Observer):
         except:
             pass
 
+    def start_tracking_order_book(self):
+        self.ob_filename = self.out_dir + 'order-book-' + \
+            str(datetime.date()) + '.json'
+        self.obfp = open(filename, 'w')
+    
     def begin_opportunity_finder(self, depths):
-        filename = self.out_dir + 'order-book-' + \
-            str(int(time.time())) + '.json'
-        fp = open(filename, 'w')
+        
         json.dump(depths, fp)
 
     def end_opportunity_finder(self):

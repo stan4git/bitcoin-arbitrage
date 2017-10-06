@@ -9,7 +9,9 @@ import time
 
 class FiatConverter:
     __shared_state = {}
-    rate_exchange_url = "http://rate-exchange.appspot.com/currency?from=%s&to=%s"
+#    rate_exchange_url = "http://rate-exchange.appspot.com/currency?from=%s&to=%s"
+    apikey = "placeholder"
+    rate_exchange_url = "http://www.apilayer.net/api/convert?access_key=%s&from=%s&to=%s"
     rate_exchange_url_yahoo = "http://download.finance.yahoo.com/d/quotes.csv?s=%s%s=X&f=sl1d1&e=.csv"
 
     def __init__(self):
@@ -21,12 +23,12 @@ class FiatConverter:
             "CNY": 6.15,
             "SEK": 6.6,
         }
-        self.update_delay = 60 * 60 # every hour
+        self.update_delay = 60 * 30 # every half hour
         self.last_update = 0
         self.bank_fee = 0.007 # FIXME: bank fee
 
     def get_currency_pair(self, code_from, code_to):
-        url = self.rate_exchange_url % (code_from, code_to)
+        url = self.rate_exchange_url % (self.apikey, code_from, code_to)
         res = urllib.request.urlopen(url)
         data = json.loads(res.read().decode('utf8'))
         rate = 0
